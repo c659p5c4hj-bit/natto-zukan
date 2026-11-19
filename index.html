@@ -1,0 +1,2194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>納豆図鑑 - マイ納豆テイスティングログ</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+JP:wght@400;500;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap"
+    rel="stylesheet"
+  />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            cream: '#FAF7F2',
+            creamDark: '#EFE8DC',
+            soy: '#4A3525',
+            soyLight: '#6B4E38',
+            soyMuted: '#7E6A5A',
+            gold: '#C88A2E',
+            goldLight: '#F9EEDB',
+            straw: '#D8C7AD',
+          },
+          fontFamily: {
+            sans: ['"Noto Sans JP"', '"Inter"', 'sans-serif'],
+            maru: ['"Zen Maru Gothic"', '"Noto Sans JP"', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    body {
+      background-color: #EAE3D5;
+      color: #4A3525;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .app-canvas {
+      background-color: #FAF7F2;
+      background-image: radial-gradient(#DFD5C3 0.65px, transparent 0.65px);
+      background-size: 16px 16px;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    input[type='range'].natto-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 10px;
+      background: #E4D8C4;
+      border-radius: 9999px;
+      outline: none;
+    }
+    input[type='range'].natto-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 9999px;
+      background: #4A3525;
+      border: 3px solid #C88A2E;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(74, 53, 37, 0.25);
+    }
+    input[type='range'].natto-slider::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 9999px;
+      background: #4A3525;
+      border: 3px solid #C88A2E;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(74, 53, 37, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex justify-center font-sans antialiased selection:bg-gold/30">
+  <div class="app-canvas w-full max-w-[600px] min-h-screen shadow-2xl relative flex flex-col">
+
+    <!-- ========================================================= -->
+    <!-- 画面1: ホーム（一覧・検索）ビュー (#view-home) -->
+    <!-- ========================================================= -->
+    <section id="view-home" class="flex-1 flex flex-col pb-28">
+      <header class="sticky top-0 z-20 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-straw/70 px-4 pt-3 pb-3 shadow-2xs">
+        <div class="flex items-center justify-between gap-2 mb-2.5">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <div class="w-10 h-10 rounded-2xl bg-soy text-cream flex items-center justify-center shrink-0 shadow-2xs">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <ellipse cx="9" cy="10" rx="4.5" ry="3.2" transform="rotate(-20 9 10)" fill="#C88A2E" />
+                <ellipse cx="15" cy="14" rx="4.5" ry="3.2" transform="rotate(15 15 14)" fill="#D8C7AD" />
+                <path d="M4 12c0 4.5 3.6 8 8 8s8-3.5 8-8" stroke="#FAF7F2" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <h1 class="font-maru font-bold text-lg text-soy leading-tight truncate">納豆図鑑</h1>
+              <p class="text-xs text-soyMuted">
+                登録商品：<span id="total-count" class="font-bold text-soy">0</span> 件
+              </p>
+            </div>
+          </div>
+
+          <button
+            id="btn-open-data"
+            type="button"
+            class="px-3.5 py-2.5 rounded-xl bg-creamDark hover:bg-straw/50 active:scale-95 text-soy border border-straw/80 text-xs font-bold flex items-center gap-1.5 transition shrink-0"
+          >
+            <svg class="w-4 h-4 text-soyLight" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+            </svg>
+            <span>データ管理</span>
+          </button>
+        </div>
+
+        <!-- リアルタイム検索入力 -->
+        <div class="relative mb-2.5">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-soyMuted">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </span>
+          <input
+            id="search-input"
+            type="search"
+            placeholder="商品名・製造元・販売元・都道府県・購入場所・メモで検索..."
+            class="w-full pl-9 pr-9 py-2.5 bg-white border border-straw rounded-xl text-sm text-soy placeholder-soyMuted/75 focus:outline-none focus:ring-2 focus:ring-gold"
+          />
+          <button
+            id="btn-clear-search"
+            type="button"
+            aria-label="検索クリア"
+            class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-soyMuted hover:text-soy"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 個別星評価フィルター（複数選択可）＆並び替え -->
+        <div class="space-y-2">
+          <div
+            id="rating-filters"
+            class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5"
+            role="group"
+            aria-label="評価ランク個別フィルター"
+          ></div>
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-[11px] text-soyMuted">※評価チップは複数タップで絞り込み可</span>
+            <select
+              id="sort-select"
+              aria-label="並び替え"
+              class="bg-white border border-straw text-soy text-xs font-bold rounded-xl px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-gold shrink-0"
+            >
+              <option value="purchaseDateDesc">購入日が新しい順</option>
+              <option value="purchaseDateAsc">購入日が古い順</option>
+              <option value="ratingDesc">評価が高い順</option>
+              <option value="ratingAsc">評価が低い順</option>
+              <option value="manufacturerAsc">製造元順</option>
+              <option value="sellerAsc">販売元順</option>
+              <option value="manufacturerPrefAsc">製造元の都道府県順</option>
+            </select>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 px-4 pt-3">
+        <div
+          id="filter-status"
+          class="hidden mb-2.5 px-3 py-2 rounded-xl bg-creamDark border border-straw/70 text-xs text-soyMuted flex items-center justify-between gap-2"
+        >
+          <span id="filter-status-text" class="truncate"></span>
+          <button id="btn-reset-filters" type="button" class="text-soy font-bold underline shrink-0">
+            リセット
+          </button>
+        </div>
+
+        <div id="natto-list" class="space-y-3"></div>
+
+        <div id="empty-state" class="hidden py-12 px-5 text-center bg-white/85 rounded-3xl border border-straw/70 mt-2">
+          <h2 id="empty-title" class="font-maru font-bold text-base text-soy mb-1">まだ記録がありません</h2>
+          <p id="empty-desc" class="text-xs text-soyMuted leading-relaxed mb-4">
+            右下の「＋ 新規記録」ボタンから、食べた納豆の写真と感想を残してみましょう。
+          </p>
+          <button
+            id="btn-seed-samples"
+            type="button"
+            class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-goldLight hover:bg-gold/25 text-soy text-xs font-bold border border-gold/50 transition"
+          >
+            サンプルデータを2件追加して試す
+          </button>
+        </div>
+      </main>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 画面2: 新規登録・編集ビュー (#view-form) -->
+    <!-- ========================================================= -->
+    <section id="view-form" style="display: none;" class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 bg-soy text-cream px-4 py-3.5 flex items-center justify-between gap-2 shadow-sm">
+        <button
+          id="btn-form-back"
+          type="button"
+          class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold flex items-center gap-1 transition"
+        >
+          <span>← 戻る</span>
+        </button>
+        <h2 id="form-view-title" class="font-maru font-bold text-base">新しい納豆を記録</h2>
+        <div class="w-14"></div>
+      </header>
+
+      <form id="natto-form" class="p-4 space-y-4 flex-1 pb-10" novalidate>
+        <input id="entry-id" type="hidden" value="" />
+
+        <div id="form-alert" class="hidden p-3 rounded-2xl bg-red-50 border border-red-300 text-red-800 text-xs font-bold leading-relaxed"></div>
+
+        <!-- パッケージ写真 -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-soy">パッケージ写真（自動圧縮して保存）</span>
+            <button id="btn-remove-photo" type="button" class="hidden text-xs font-bold text-red-600 hover:underline">
+              写真を外す
+            </button>
+          </div>
+          <label class="block cursor-pointer">
+            <div class="w-full h-44 rounded-2xl border-2 border-dashed border-straw hover:border-gold bg-cream/60 flex flex-col items-center justify-center overflow-hidden transition">
+              <img id="photo-preview" src="" alt="プレビュー" class="hidden w-full h-full object-contain bg-creamDark" />
+              <div id="photo-placeholder" class="flex flex-col items-center justify-center text-center px-4">
+                <svg class="w-8 h-8 text-soyMuted mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="text-xs font-bold text-soy">タップして撮影または画像を選択</span>
+                <span class="text-[11px] text-soyMuted mt-0.5">最大幅800pxに自動リサイズされます</span>
+              </div>
+            </div>
+            <input id="photo-input" type="file" accept="image/*" class="sr-only" />
+          </label>
+        </div>
+
+        <!-- 商品名 -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-1.5">
+          <label for="product-name" class="block text-xs font-bold text-soy">
+            商品名 <span class="text-red-600">*</span>
+          </label>
+          <input
+            id="product-name"
+            type="text"
+            required
+            placeholder="例：おかめ納豆 極小粒ミニ3、くめ納豆 秘伝Gold"
+            class="w-full px-3.5 py-2.5 bg-cream/60 border border-straw rounded-xl text-sm text-soy focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold"
+          />
+        </div>
+
+        <!-- 0.5刻み星評価 -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-bold text-soy">評価ランク（0.5刻み）</span>
+            <span id="rating-readout" class="text-sm font-bold text-soy bg-goldLight px-3 py-0.5 rounded-full">★ 3.0</span>
+          </div>
+          <p class="text-[11px] text-soyMuted mb-2.5">
+            星をタップするとその点数に。選択中の星をもう一度タップすると半分（.5）に切り替わります。
+          </p>
+          <div id="star-rating-buttons" class="grid grid-cols-5 gap-1.5 bg-cream/70 p-2 rounded-2xl border border-straw/50"></div>
+        </div>
+
+        <!-- 風味・食感・粘り（5段階スライダー）＆メモ -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-4">
+          <span class="block text-xs font-bold text-soy">風味・食感・粘り（各5段階）</span>
+
+          <!-- 風味 -->
+          <div class="p-3 rounded-xl bg-cream/60 border border-straw/50">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="flavor-slider" class="text-xs font-bold text-soy">風味</label>
+              <span id="flavor-value-badge" class="text-xs text-soy bg-creamDark px-2.5 py-0.5 rounded-full border border-straw/60">3（並）</span>
+            </div>
+            <input id="flavor-slider" type="range" min="1" max="5" step="1" value="3" class="natto-slider" />
+            <div class="flex justify-between text-[11px] text-soyMuted mt-1.5">
+              <span><strong>1：大豆</strong></span>
+              <span>2：大豆</span>
+              <span>3：並</span>
+              <span>4：納豆</span>
+              <span><strong>5：納豆</strong></span>
+            </div>
+          </div>
+
+          <!-- 食感 -->
+          <div class="p-3 rounded-xl bg-cream/60 border border-straw/50">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="texture-slider" class="text-xs font-bold text-soy">食感</label>
+              <span id="texture-value-badge" class="text-xs text-soy bg-creamDark px-2.5 py-0.5 rounded-full border border-straw/60">3（並）</span>
+            </div>
+            <input id="texture-slider" type="range" min="1" max="5" step="1" value="3" class="natto-slider" />
+            <div class="flex justify-between text-[11px] text-soyMuted mt-1.5">
+              <span><strong>1：柔</strong></span>
+              <span>2：柔</span>
+              <span>3：並</span>
+              <span>4：硬</span>
+              <span><strong>5：硬</strong></span>
+            </div>
+          </div>
+
+          <!-- 粘り -->
+          <div class="p-3 rounded-xl bg-cream/60 border border-straw/50">
+            <div class="flex items-center justify-between mb-1.5">
+              <label for="stickiness-slider" class="text-xs font-bold text-soy">粘り</label>
+              <span id="stickiness-value-badge" class="text-xs text-soy bg-creamDark px-2.5 py-0.5 rounded-full border border-straw/60">3（並）</span>
+            </div>
+            <input id="stickiness-slider" type="range" min="1" max="5" step="1" value="3" class="natto-slider" />
+            <div class="flex justify-between text-[11px] text-soyMuted mt-1.5">
+              <span><strong>1：少</strong></span>
+              <span>2：少</span>
+              <span>3：並</span>
+              <span>4：多</span>
+              <span><strong>5：多</strong></span>
+            </div>
+          </div>
+
+          <!-- 自由記入メモ -->
+          <div class="space-y-1.5">
+            <label for="notes-input" class="block text-xs font-bold text-soy">感想・メモ</label>
+            <textarea
+              id="notes-input"
+              rows="3"
+              placeholder="タレ・からしの印象、粒の大きさ、リピートしたいかなど自由にメモ..."
+              class="w-full px-3.5 py-2.5 bg-cream/60 border border-straw rounded-xl text-sm text-soy focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold leading-relaxed"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 購入日＆購入場所 -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-3">
+          <span class="block text-xs font-bold text-soy">購入日・購入場所</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="purchase-date" class="block text-[11px] text-soyMuted mb-1">購入日</label>
+              <input
+                id="purchase-date"
+                type="date"
+                class="w-full px-3 py-2 bg-cream/60 border border-straw rounded-xl text-sm text-soy focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold"
+              />
+            </div>
+            <div>
+              <label for="purchase-location" class="block text-[11px] text-soyMuted mb-1">購入場所</label>
+              <input
+                id="purchase-location"
+                type="text"
+                placeholder="例：カスミ、イオン、業務スーパー"
+                class="w-full px-3 py-2 bg-cream/60 border border-straw rounded-xl text-sm text-soy focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold"
+              />
+            </div>
+          </div>
+          <div id="location-chips-wrap" class="hidden pt-1">
+            <span class="block text-[11px] text-soyMuted mb-1.5">過去の購入場所からタップ入力：</span>
+            <div id="location-chips" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+
+        <!-- 製造元＆販売元（都道府県） -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-soy">製造元・販売元（都道府県）</span>
+            <button
+              id="btn-copy-maker"
+              type="button"
+              class="px-2.5 py-1.5 rounded-lg bg-goldLight hover:bg-gold/25 text-soy text-[11px] font-bold border border-gold/50 transition"
+            >
+              製造元と同じにする
+            </button>
+          </div>
+
+          <div class="p-3 rounded-xl bg-cream/60 border border-straw/50 space-y-2">
+            <span class="block text-xs font-bold text-soyLight">製造元</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                id="manufacturer"
+                type="text"
+                list="manufacturer-datalist"
+                placeholder="製造元名（例：タカノフーズ）"
+                class="w-full px-3 py-2 bg-white border border-straw rounded-xl text-sm text-soy focus:outline-none focus:ring-2 focus:ring-gold"
+              />
+              <select
+                id="manufacturer-pref"
+                aria-label="製造元の都道府県"
+                class="prefecture-select w-full px-3 py-2 bg-white border border-straw rounded-xl text-sm text-soy focus:outline-none focus:ring-2 focus:ring-gold"
+              ></select>
+            </div>
+            <datalist id="manufacturer-datalist"></datalist>
+          </div>
+
+          <div class="p-3 rounded-xl bg-cream/60 border border-straw/50 space-y-2">
+            <span class="block text-xs font-bold text-soyLight">販売元</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <input
+                id="seller"
+                type="text"
+                list="seller-datalist"
+                placeholder="販売元名（例：イオン、成城石井）"
+                class="w-full px-3 py-2 bg-white border border-straw rounded-xl text-sm text-soy focus:outline-none focus:ring-2 focus:ring-gold"
+              />
+              <select
+                id="seller-pref"
+                aria-label="販売元の都道府県"
+                class="prefecture-select w-full px-3 py-2 bg-white border border-straw rounded-xl text-sm text-soy focus:outline-none focus:ring-2 focus:ring-gold"
+              ></select>
+            </div>
+            <datalist id="seller-datalist"></datalist>
+          </div>
+        </div>
+
+        <!-- 保存・キャンセルボタン -->
+        <div class="flex items-center gap-3 pt-2">
+          <button
+            id="btn-form-cancel"
+            type="button"
+            class="px-5 py-3.5 rounded-xl text-xs font-bold text-soyMuted bg-creamDark hover:bg-straw/50 transition"
+          >
+            キャンセル
+          </button>
+          <button
+            id="btn-form-submit"
+            type="submit"
+            class="flex-1 py-3.5 px-5 rounded-xl text-sm font-bold bg-soy hover:bg-soyLight active:scale-[0.99] text-cream shadow-md transition"
+          >
+            記録する
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 画面3: 商品詳細ビュー (#view-detail) -->
+    <!-- ========================================================= -->
+    <section id="view-detail" style="display: none;" class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 bg-creamDark/95 backdrop-blur-md border-b border-straw/70 px-4 py-3 flex items-center justify-between gap-2">
+        <button
+          id="btn-detail-back"
+          type="button"
+          class="px-3 py-2 rounded-xl bg-white hover:bg-cream text-soy border border-straw/70 text-xs font-bold flex items-center gap-1 transition"
+        >
+          <span>← 一覧へ</span>
+        </button>
+        <h2 class="font-maru font-bold text-base text-soy">記録の詳細</h2>
+        <button
+          id="btn-detail-edit"
+          type="button"
+          class="px-3.5 py-2 rounded-xl bg-soy hover:bg-soyLight text-cream text-xs font-bold transition"
+        >
+          編集する
+        </button>
+      </header>
+
+      <div id="detail-body" class="p-4 space-y-4 flex-1 pb-10"></div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 画面4: 別パッケージ追加ビュー (#view-pkg-form) -->
+    <!-- ========================================================= -->
+    <section id="view-pkg-form" style="display: none;" class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 bg-soy text-cream px-4 py-3.5 flex items-center justify-between gap-2 shadow-sm">
+        <button
+          id="btn-pkg-back"
+          type="button"
+          class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold transition shrink-0"
+        >
+          ← 戻る
+        </button>
+        <div class="text-center min-w-0 flex-1">
+          <h2 class="font-maru font-bold text-base leading-tight">別パッケージを追加</h2>
+          <p id="pkg-target-label" class="text-[11px] text-goldLight truncate mt-0.5"></p>
+        </div>
+        <div class="w-12 shrink-0"></div>
+      </header>
+
+      <form id="pkg-form" class="p-4 space-y-4 flex-1 pb-10" novalidate>
+        <div id="pkg-alert" class="hidden p-3 rounded-2xl bg-red-50 border border-red-300 text-red-800 text-xs font-bold leading-relaxed"></div>
+
+        <div class="px-3.5 py-3 rounded-2xl bg-goldLight/70 border border-gold/40 text-xs text-soy leading-relaxed">
+          評価や味（風味・食感・粘り）、メーカー情報はそのまま引き継ぎ、新しいパッケージの写真・購入日・メモを追加します。
+        </div>
+
+        <!-- 新しいパッケージ写真 -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-soy">新しいパッケージ写真</span>
+            <button id="btn-remove-pkg-photo" type="button" class="hidden text-xs font-bold text-red-600 hover:underline">
+              写真を外す
+            </button>
+          </div>
+          <label class="block cursor-pointer">
+            <div class="w-full h-48 rounded-2xl border-2 border-dashed border-straw hover:border-gold bg-cream/60 flex flex-col items-center justify-center overflow-hidden transition">
+              <img id="pkg-photo-preview" src="" alt="別パッケージプレビュー" class="hidden w-full h-full object-contain bg-creamDark" />
+              <div id="pkg-photo-placeholder" class="flex flex-col items-center justify-center text-center px-4">
+                <svg class="w-8 h-8 text-soyMuted mb-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span class="text-xs font-bold text-soy">タップして新しいパッケージを選択</span>
+                <span class="text-[11px] text-soyMuted mt-0.5">最大幅800pxに自動リサイズされます</span>
+              </div>
+            </div>
+            <input id="pkg-photo-input" type="file" accept="image/*" class="sr-only" />
+          </label>
+        </div>
+
+        <!-- 購入日 -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-1.5">
+          <label for="pkg-date-input" class="block text-xs font-bold text-soy">購入日</label>
+          <input
+            id="pkg-date-input"
+            type="date"
+            class="w-full px-3.5 py-2.5 bg-cream/60 border border-straw rounded-xl text-sm text-soy focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold"
+          />
+        </div>
+
+        <!-- 別パッケージメモ -->
+        <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-1.5">
+          <label for="pkg-notes-input" class="block text-xs font-bold text-soy">メモ（デザイン変更・限定版・購入店など）</label>
+          <textarea
+            id="pkg-notes-input"
+            rows="3"
+            placeholder="例：季節限定パッケージに刷新、増量キャンペーン版、〇〇スーパーで購入..."
+            class="w-full px-3.5 py-2.5 bg-cream/60 border border-straw rounded-xl text-sm text-soy focus:bg-white focus:outline-none focus:ring-2 focus:ring-gold leading-relaxed"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center gap-3 pt-2">
+          <button
+            id="btn-pkg-cancel"
+            type="button"
+            class="px-5 py-3.5 rounded-xl text-xs font-bold text-soyMuted bg-creamDark hover:bg-straw/50 transition"
+          >
+            キャンセル
+          </button>
+          <button
+            id="btn-pkg-submit"
+            type="submit"
+            class="flex-1 py-3.5 px-5 rounded-xl text-sm font-bold bg-soy hover:bg-soyLight text-cream shadow-md transition"
+          >
+            このパッケージを追加
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- 画面5: データ管理・バックアップビュー (#view-data) -->
+    <!-- ========================================================= -->
+    <section id="view-data" style="display: none;" class="flex-1 flex flex-col">
+      <header class="sticky top-0 z-20 bg-soy text-cream px-4 py-3.5 flex items-center justify-between gap-2 shadow-sm">
+        <button
+          id="btn-data-back"
+          type="button"
+          class="px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold transition"
+        >
+          ← 一覧へ
+        </button>
+        <h2 class="font-maru font-bold text-base">データ管理・バックアップ</h2>
+        <div class="w-14"></div>
+      </header>
+
+      <div class="p-4 space-y-4 flex-1">
+        <div class="bg-white p-4 rounded-2xl border border-straw/70 space-y-2.5">
+          <h3 class="text-sm font-bold text-soy">JSONバックアップ書き出し</h3>
+          <p class="text-xs text-soyMuted leading-relaxed">
+            現在の全商品記録（別パッケージ履歴・圧縮画像を含む）を1つのJSONファイルとしてダウンロード保存します。
+          </p>
+          <button
+            id="btn-export-json"
+            type="button"
+            class="w-full py-3 px-4 rounded-xl bg-soy hover:bg-soyLight text-cream text-xs font-bold transition"
+          >
+            JSONファイルをダウンロード
+          </button>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-straw/70 space-y-2.5">
+          <h3 class="text-sm font-bold text-soy">JSONバックアップから復元</h3>
+          <p class="text-xs text-soyMuted leading-relaxed">
+            以前に書き出したJSONファイルを選択すると、データを復元（同一IDは上書き、新規IDは追加）します。
+          </p>
+          <label class="w-full cursor-pointer py-3 px-4 rounded-xl bg-creamDark hover:bg-straw/50 text-soy text-xs font-bold border border-straw flex items-center justify-center transition">
+            <span>JSONファイルを選択して復元</span>
+            <input id="import-json-input" type="file" accept=".json,application/json" class="sr-only" />
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- ホーム画面専用フローティング新規記録ボタン (#fab-add) -->
+    <!-- ========================================================= -->
+    <div id="fab-add" class="fixed bottom-5 inset-x-0 flex justify-center pointer-events-none z-30">
+      <div class="w-full max-w-[600px] px-4 flex justify-end">
+        <button
+          id="btn-fab-create"
+          type="button"
+          class="pointer-events-auto inline-flex items-center gap-2 bg-soy hover:bg-soyLight active:scale-95 text-cream font-maru font-bold px-5 py-3.5 rounded-full shadow-lg shadow-soy/30 border border-soyLight/60 transition"
+        >
+          <svg class="w-5 h-5 text-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
+          </svg>
+          <span class="text-sm tracking-wide">新規記録</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 画像拡大ライトボックス（詳細画面・別パッケージ画像タップで表示） -->
+  <div
+    id="image-lightbox"
+    style="display: none;"
+    class="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex flex-col items-center justify-center p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-label="画像の拡大表示"
+  >
+    <div class="w-full max-w-[600px] flex items-center justify-between gap-2 mb-3 text-cream">
+      <div class="min-w-0">
+        <p id="lightbox-caption" class="text-xs font-bold truncate"></p>
+        <p id="lightbox-subcaption" class="text-[11px] text-white/75 truncate"></p>
+      </div>
+      <button
+        id="btn-close-lightbox"
+        type="button"
+        class="px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-xs font-bold text-cream shrink-0 transition"
+      >
+        閉じる ✕
+      </button>
+    </div>
+
+    <div id="lightbox-backdrop" class="w-full max-w-[600px] flex-1 flex items-center justify-center overflow-auto">
+      <img
+        id="lightbox-img"
+        src=""
+        alt="拡大画像"
+        class="max-w-full max-h-[78vh] w-auto h-auto object-contain rounded-2xl shadow-2xl cursor-zoom-out"
+      />
+    </div>
+  </div>
+
+  <!-- 削除確認ダイアログ（alert/confirm代替） -->
+  <div
+    id="confirm-dialog"
+    style="display: none;"
+    class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+    role="alertdialog"
+    aria-modal="true"
+  >
+    <div class="bg-white w-full max-w-[340px] rounded-2xl p-5 shadow-2xl space-y-4 border border-straw/70">
+      <h3 id="confirm-title" class="font-maru font-bold text-base text-soy">確認</h3>
+      <p id="confirm-message" class="text-xs text-soyMuted leading-relaxed"></p>
+      <div class="flex items-center justify-end gap-2 pt-1">
+        <button
+          id="confirm-cancel-btn"
+          type="button"
+          class="px-4 py-2.5 rounded-xl text-xs font-bold text-soyMuted bg-creamDark hover:bg-straw/50 transition"
+        >
+          キャンセル
+        </button>
+        <button
+          id="confirm-ok-btn"
+          type="button"
+          class="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition"
+        >
+          削除する
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト通知 -->
+  <div
+    id="toast"
+    class="fixed top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 transition-opacity duration-200"
+  >
+    <div class="bg-soy text-cream text-xs font-bold px-4 py-2.5 rounded-full shadow-lg border border-gold/60 whitespace-nowrap">
+      <span id="toast-message"></span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================
+      // 1. 定数定義
+      // =========================================================
+      const DB_NAME = 'NattoZukanDB';
+      const DB_VERSION = 1;
+      const STORE_NAME = 'entries';
+      const LS_FALLBACK_KEY = 'NattoZukanFallbackEntries_v1';
+
+      const RATING_CHOICES = [5.0, 4.5, 4.0, 3.5, 3.0, 2.5, 2.0, 1.5, 1.0, 0.5];
+
+      const PREFECTURES = [
+        '北海道',
+        '青森県', '岩手県', '宮城県', '秋田県', '山形県', '福島県',
+        '茨城県', '栃木県', '群馬県', '埼玉県', '千葉県', '東京都', '神奈川県',
+        '新潟県', '富山県', '石川県', '福井県', '山梨県', '長野県', '岐阜県', '静岡県', '愛知県',
+        '三重県', '滋賀県', '京都府', '大阪府', '兵庫県', '奈良県', '和歌山県',
+        '鳥取県', '島根県', '岡山県', '広島県', '山口県',
+        '徳島県', '香川県', '愛媛県', '高知県',
+        '福岡県', '佐賀県', '長崎県', '熊本県', '大分県', '宮崎県', '鹿児島県', '沖縄県',
+      ];
+
+      // 5段階特性ラベル（1と5のみ strong: true で太字強調、背景色は全段階共通）
+      const TRAIT_SCALE_MAP = {
+        flavor: {
+          1: { text: '大豆', strong: true },
+          2: { text: '大豆', strong: false },
+          3: { text: '並', strong: false },
+          4: { text: '納豆', strong: false },
+          5: { text: '納豆', strong: true },
+        },
+        texture: {
+          1: { text: '柔', strong: true },
+          2: { text: '柔', strong: false },
+          3: { text: '並', strong: false },
+          4: { text: '硬', strong: false },
+          5: { text: '硬', strong: true },
+        },
+        stickiness: {
+          1: { text: '少', strong: true },
+          2: { text: '少', strong: false },
+          3: { text: '並', strong: false },
+          4: { text: '多', strong: false },
+          5: { text: '多', strong: true },
+        },
+      };
+
+      function getTraitMeta(kind, rawVal) {
+        const num = Math.max(1, Math.min(5, Math.round(Number(rawVal) || 3)));
+        const map = TRAIT_SCALE_MAP[kind] || TRAIT_SCALE_MAP.flavor;
+        return map[num] || { text: '並', strong: false };
+      }
+
+      // =========================================================
+      // 2. ストレージ層（IndexedDB + localStorageフォールバック）
+      // =========================================================
+      const storage = {
+        db: null,
+        useLocalStorage: false,
+
+        open() {
+          return new Promise((resolve) => {
+            if (!window.indexedDB) {
+              this.useLocalStorage = true;
+              resolve();
+              return;
+            }
+            try {
+              const req = window.indexedDB.open(DB_NAME, DB_VERSION);
+              req.onupgradeneeded = (e) => {
+                const db = e.target.result;
+                if (!db.objectStoreNames.contains(STORE_NAME)) {
+                  db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+                }
+              };
+              req.onsuccess = (e) => {
+                this.db = e.target.result;
+                resolve();
+              };
+              req.onerror = () => {
+                this.useLocalStorage = true;
+                resolve();
+              };
+            } catch (err) {
+              this.useLocalStorage = true;
+              resolve();
+            }
+          });
+        },
+
+        _readLS() {
+          try {
+            const raw = window.localStorage.getItem(LS_FALLBACK_KEY);
+            const parsed = raw ? JSON.parse(raw) : [];
+            return Array.isArray(parsed) ? parsed : [];
+          } catch (e) {
+            return [];
+          }
+        },
+
+        _writeLS(items) {
+          try {
+            window.localStorage.setItem(LS_FALLBACK_KEY, JSON.stringify(items));
+          } catch (e) {
+            throw new Error('保存容量の上限に達しました。古い写真や不要なデータを整理してください。');
+          }
+        },
+
+        getAll() {
+          return new Promise((resolve) => {
+            if (this.useLocalStorage || !this.db) {
+              resolve(this._readLS());
+              return;
+            }
+            try {
+              const tx = this.db.transaction(STORE_NAME, 'readonly');
+              const store = tx.objectStore(STORE_NAME);
+              const req = store.getAll();
+              req.onsuccess = () => resolve(Array.isArray(req.result) ? req.result : []);
+              req.onerror = () => resolve(this._readLS());
+            } catch (e) {
+              resolve(this._readLS());
+            }
+          });
+        },
+
+        put(record) {
+          return new Promise((resolve, reject) => {
+            if (this.useLocalStorage || !this.db) {
+              try {
+                const list = this._readLS();
+                const idx = list.findIndex((item) => item.id === record.id);
+                if (idx >= 0) {
+                  list[idx] = record;
+                } else {
+                  list.push(record);
+                }
+                this._writeLS(list);
+                resolve(record);
+              } catch (err) {
+                reject(err);
+              }
+              return;
+            }
+            try {
+              const tx = this.db.transaction(STORE_NAME, 'readwrite');
+              const store = tx.objectStore(STORE_NAME);
+              const req = store.put(record);
+              req.onsuccess = () => resolve(record);
+              req.onerror = () => reject(new Error('データベースへの保存に失敗しました。'));
+            } catch (err) {
+              reject(err);
+            }
+          });
+        },
+
+        delete(id) {
+          return new Promise((resolve, reject) => {
+            if (this.useLocalStorage || !this.db) {
+              try {
+                const list = this._readLS().filter((item) => item.id !== id);
+                this._writeLS(list);
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
+              return;
+            }
+            try {
+              const tx = this.db.transaction(STORE_NAME, 'readwrite');
+              const store = tx.objectStore(STORE_NAME);
+              const req = store.delete(id);
+              req.onsuccess = () => resolve();
+              req.onerror = () => reject(new Error('削除に失敗しました。'));
+            } catch (err) {
+              reject(err);
+            }
+          });
+        },
+      };
+
+      // =========================================================
+      // 3. 状態管理＆排他的ビュー切り替え (showView)
+      // =========================================================
+      let entries = [];
+      let selectedRatings = new Set();
+      let activeSort = 'purchaseDateDesc';
+      let activeQuery = '';
+      let currentRating = 3.0;
+      let currentPhotoDataUrl = '';
+      let currentPkgPhotoDataUrl = '';
+      let viewingEntryId = null;
+      let activePkgTargetId = null;
+      let formReturnTarget = 'home'; // 'home' or 'detail'
+      let toastTimer = null;
+
+      const VIEW_IDS = ['view-home', 'view-form', 'view-detail', 'view-pkg-form', 'view-data'];
+
+      function showView(viewId) {
+        VIEW_IDS.forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.style.display = id === viewId ? 'flex' : 'none';
+          }
+        });
+
+        // ホーム画面の時だけ右下の「＋ 新規記録」ボタンを表示し、それ以外の全画面で確実に非表示
+        const fab = document.getElementById('fab-add');
+        if (fab) {
+          fab.style.display = viewId === 'view-home' ? 'flex' : 'none';
+        }
+
+        window.scrollTo({ top: 0, behavior: 'instant' });
+      }
+
+      // =========================================================
+      // 4. ユーティリティ（日付・エスケープ・画像圧縮・ライトボックス・確認・トースト）
+      // =========================================================
+      function getTodayIsoDate() {
+        const d = new Date();
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      function escapeHtml(str) {
+        return String(str ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function showToast(message) {
+        const toastEl = document.getElementById('toast');
+        const msgEl = document.getElementById('toast-message');
+        if (!toastEl || !msgEl) return;
+        msgEl.textContent = message;
+        toastEl.classList.remove('opacity-0');
+        toastEl.classList.add('opacity-100');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toastEl.classList.remove('opacity-100');
+          toastEl.classList.add('opacity-0');
+        }, 2300);
+      }
+
+      function openLightbox(src, caption = '', subcaption = '') {
+        if (!src) return;
+        const box = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-img');
+        const capEl = document.getElementById('lightbox-caption');
+        const subEl = document.getElementById('lightbox-subcaption');
+        if (!box || !img) return;
+        img.src = src;
+        if (capEl) capEl.textContent = caption;
+        if (subEl) subEl.textContent = subcaption;
+        box.style.display = 'flex';
+      }
+
+      function closeLightbox() {
+        const box = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-img');
+        if (box) box.style.display = 'none';
+        if (img) img.src = '';
+      }
+
+      function compressImage(file, maxWidth = 800, quality = 0.75) {
+        return new Promise((resolve, reject) => {
+          if (!file || !file.type.startsWith('image/')) {
+            reject(new Error('画像ファイルを選択してください。'));
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+              let width = img.width;
+              let height = img.height;
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = () => reject(new Error('画像の読み込みに失敗しました。'));
+            img.src = ev.target.result;
+          };
+          reader.onerror = () => reject(new Error('ファイルの読み込みに失敗しました。'));
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function openConfirmDialog(title, message) {
+        return new Promise((resolve) => {
+          const dialog = document.getElementById('confirm-dialog');
+          const titleEl = document.getElementById('confirm-title');
+          const msgEl = document.getElementById('confirm-message');
+          const okBtn = document.getElementById('confirm-ok-btn');
+          const cancelBtn = document.getElementById('confirm-cancel-btn');
+
+          if (!dialog || !okBtn || !cancelBtn) {
+            resolve(false);
+            return;
+          }
+          titleEl.textContent = title;
+          msgEl.textContent = message;
+          dialog.style.display = 'flex';
+
+          const cleanup = (result) => {
+            dialog.style.display = 'none';
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            resolve(result);
+          };
+          const onOk = () => cleanup(true);
+          const onCancel = () => cleanup(false);
+
+          okBtn.addEventListener('click', onOk);
+          cancelBtn.addEventListener('click', onCancel);
+        });
+      }
+
+      // =========================================================
+      // 5. 星評価（0.5刻み）＆ スライダーラベル
+      // =========================================================
+      function buildStarSvg(fillRatio, size = 24) {
+        const emptyColor = '#DFD4BE';
+        const activeColor = '#C88A2E';
+        const path =
+          'M12 2.2l2.92 6.26 6.88.85-5.06 4.74 1.31 6.81L12 17.52l-6.05 3.34 1.31-6.81-5.06-4.74 6.88-.85L12 2.2z';
+
+        if (fillRatio >= 1) {
+          return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="inline-block shrink-0" aria-hidden="true"><path d="${path}" fill="${activeColor}"/></svg>`;
+        }
+        if (fillRatio <= 0) {
+          return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="inline-block shrink-0" aria-hidden="true"><path d="${path}" fill="${emptyColor}"/></svg>`;
+        }
+        const gradId = `half_${Math.random().toString(36).slice(2, 8)}`;
+        return `
+          <svg width="${size}" height="${size}" viewBox="0 0 24 24" class="inline-block shrink-0" aria-hidden="true">
+            <defs>
+              <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="50%" stop-color="${activeColor}"/>
+                <stop offset="50%" stop-color="${emptyColor}"/>
+              </linearGradient>
+            </defs>
+            <path d="${path}" fill="url(#${gradId})"/>
+          </svg>
+        `;
+      }
+
+      function renderStarDisplay(ratingValue, size = 15, showValue = true) {
+        const val = Math.max(0.5, Math.min(5.0, Math.round((Number(ratingValue) || 3.0) * 2) / 2));
+        let html = '';
+        for (let i = 1; i <= 5; i++) {
+          const ratio = val >= i ? 1 : val >= i - 0.5 ? 0.5 : 0;
+          html += buildStarSvg(ratio, size);
+        }
+        if (showValue) {
+          html += `<span class="ml-1 text-xs font-bold text-soy">${val.toFixed(1)}</span>`;
+        }
+        return `<div class="inline-flex items-center gap-0.5">${html}</div>`;
+      }
+
+      function applyRatingValue(nextVal) {
+        const clamped = Math.max(0.5, Math.min(5.0, Math.round(Number(nextVal) * 2) / 2));
+        currentRating = clamped;
+
+        const readoutEl = document.getElementById('rating-readout');
+        const containerEl = document.getElementById('star-rating-buttons');
+        if (readoutEl) readoutEl.textContent = `★ ${clamped.toFixed(1)}`;
+        if (!containerEl) return;
+
+        containerEl.innerHTML = '';
+        for (let starIndex = 1; starIndex <= 5; starIndex++) {
+          const ratio = clamped >= starIndex ? 1 : clamped >= starIndex - 0.5 ? 0.5 : 0;
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.setAttribute('aria-label', `${starIndex}つ目の星`);
+          btn.className =
+            'py-2 rounded-xl bg-white hover:bg-goldLight/70 active:scale-95 border border-straw/50 flex flex-col items-center justify-center gap-0.5 transition';
+          btn.innerHTML = `${buildStarSvg(ratio, 26)}<span class="text-[10px] font-bold text-soyMuted">${starIndex}</span>`;
+
+          btn.addEventListener('click', () => {
+            if (currentRating === starIndex) {
+              applyRatingValue(starIndex - 0.5);
+            } else {
+              applyRatingValue(starIndex);
+            }
+          });
+          containerEl.appendChild(btn);
+        }
+      }
+
+      function syncSliderBadges() {
+        const items = [
+          { sliderId: 'flavor-slider', badgeId: 'flavor-value-badge', kind: 'flavor' },
+          { sliderId: 'texture-slider', badgeId: 'texture-value-badge', kind: 'texture' },
+          { sliderId: 'stickiness-slider', badgeId: 'stickiness-value-badge', kind: 'stickiness' },
+        ];
+        items.forEach(({ sliderId, badgeId, kind }) => {
+          const slider = document.getElementById(sliderId);
+          const badge = document.getElementById(badgeId);
+          if (!slider || !badge) return;
+          const meta = getTraitMeta(kind, slider.value);
+          badge.innerHTML = `${slider.value}（<span class="${meta.strong ? 'font-extrabold' : 'font-normal'}">${meta.text}</span>）`;
+        });
+      }
+
+      // =========================================================
+      // 6. 都道府県・履歴サジェスト
+      // =========================================================
+      function initPrefectureSelects() {
+        const options =
+          `<option value="">都道府県を選択</option>` +
+          PREFECTURES.map((pref) => `<option value="${escapeHtml(pref)}">${escapeHtml(pref)}</option>`).join('');
+        document.querySelectorAll('.prefecture-select').forEach((sel) => {
+          sel.innerHTML = options;
+        });
+      }
+
+      function refreshInputHelpers() {
+        const locations = [...new Set(entries.map((e) => (e.purchaseLocation || '').trim()).filter(Boolean))].slice(0, 10);
+        const makers = [...new Set(entries.map((e) => (e.manufacturer || '').trim()).filter(Boolean))];
+        const sellers = [...new Set(entries.map((e) => (e.seller || '').trim()).filter(Boolean))];
+
+        const chipsWrap = document.getElementById('location-chips-wrap');
+        const chipsList = document.getElementById('location-chips');
+        const locationInput = document.getElementById('purchase-location');
+
+        if (chipsWrap && chipsList && locationInput) {
+          if (locations.length > 0) {
+            chipsWrap.classList.remove('hidden');
+            chipsList.innerHTML = locations
+              .map(
+                (loc) =>
+                  `<button type="button" class="loc-chip px-2.5 py-1 rounded-lg bg-creamDark hover:bg-goldLight text-soy text-xs font-bold border border-straw/70 transition">${escapeHtml(loc)}</button>`
+              )
+              .join('');
+            chipsList.querySelectorAll('.loc-chip').forEach((btn) => {
+              btn.addEventListener('click', () => {
+                locationInput.value = btn.textContent;
+              });
+            });
+          } else {
+            chipsWrap.classList.add('hidden');
+            chipsList.innerHTML = '';
+          }
+        }
+
+        const makerDatalist = document.getElementById('manufacturer-datalist');
+        const sellerDatalist = document.getElementById('seller-datalist');
+        if (makerDatalist) {
+          makerDatalist.innerHTML = makers.map((m) => `<option value="${escapeHtml(m)}"></option>`).join('');
+        }
+        if (sellerDatalist) {
+          sellerDatalist.innerHTML = sellers.map((s) => `<option value="${escapeHtml(s)}"></option>`).join('');
+        }
+      }
+
+      // =========================================================
+      // 7. ホーム一覧・個別星フィルター描画
+      // =========================================================
+      function renderRatingFilterChips() {
+        const container = document.getElementById('rating-filters');
+        if (!container) return;
+
+        const isAllActive = selectedRatings.size === 0;
+        const allClass = isAllActive
+          ? 'bg-soy text-cream border border-soy'
+          : 'bg-white text-soy border border-straw hover:bg-goldLight';
+
+        let html = `
+          <button type="button" data-filter-all="true" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${allClass}">
+            すべて
+          </button>
+        `;
+
+        html += RATING_CHOICES.map((val) => {
+          const key = val.toFixed(1);
+          const active = selectedRatings.has(key);
+          const cls = active
+            ? 'bg-gold text-soy border border-soy font-extrabold'
+            : 'bg-white text-soy border border-straw hover:bg-goldLight font-bold';
+          return `<button type="button" data-filter-rating="${key}" class="px-2.5 py-1.5 rounded-full text-xs whitespace-nowrap transition ${cls}">★${key}</button>`;
+        }).join('');
+
+        container.innerHTML = html;
+
+        const allBtn = container.querySelector('[data-filter-all]');
+        if (allBtn) {
+          allBtn.addEventListener('click', () => {
+            selectedRatings.clear();
+            renderRatingFilterChips();
+            renderEntriesList();
+          });
+        }
+
+        container.querySelectorAll('[data-filter-rating]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const key = btn.getAttribute('data-filter-rating');
+            if (!key) return;
+            if (selectedRatings.has(key)) {
+              selectedRatings.delete(key);
+            } else {
+              selectedRatings.add(key);
+            }
+            renderRatingFilterChips();
+            renderEntriesList();
+          });
+        });
+      }
+
+      function getSubPackages(item) {
+        if (Array.isArray(item.subPackages)) return item.subPackages;
+        if (Array.isArray(item.packages)) return item.packages;
+        return [];
+      }
+
+      function getFilteredSortedEntries() {
+        const q = activeQuery.trim().toLowerCase();
+
+        const filtered = entries.filter((item) => {
+          if (selectedRatings.size > 0) {
+            const ratingKey = (Math.round((Number(item.rating) || 0) * 2) / 2).toFixed(1);
+            if (!selectedRatings.has(ratingKey)) return false;
+          }
+          if (q) {
+            const subs = getSubPackages(item);
+            const subTexts = subs.flatMap((p) => [p.purchaseDate, p.notes]);
+            const haystack = [
+              item.productName,
+              item.manufacturer,
+              item.manufacturerPref,
+              item.seller,
+              item.sellerPref,
+              item.purchaseLocation,
+              item.notes,
+              ...subTexts,
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase();
+            if (!haystack.includes(q)) return false;
+          }
+          return true;
+        });
+
+        const prefIndex = (prefName) => {
+          const idx = PREFECTURES.indexOf(prefName || '');
+          return idx === -1 ? 999 : idx;
+        };
+
+        filtered.sort((a, b) => {
+          switch (activeSort) {
+            case 'purchaseDateAsc':
+              return (a.purchaseDate || '').localeCompare(b.purchaseDate || '') || (a.createdAt || 0) - (b.createdAt || 0);
+            case 'ratingDesc':
+              return (Number(b.rating) || 0) - (Number(a.rating) || 0) || (b.purchaseDate || '').localeCompare(a.purchaseDate || '');
+            case 'ratingAsc':
+              return (Number(a.rating) || 0) - (Number(b.rating) || 0) || (b.purchaseDate || '').localeCompare(a.purchaseDate || '');
+            case 'manufacturerAsc':
+              return (a.manufacturer || 'んんん').localeCompare(b.manufacturer || 'んんん', 'ja');
+            case 'sellerAsc':
+              return (a.seller || 'んんん').localeCompare(b.seller || 'んんん', 'ja');
+            case 'manufacturerPrefAsc':
+              return prefIndex(a.manufacturerPref) - prefIndex(b.manufacturerPref) || (a.manufacturer || '').localeCompare(b.manufacturer || '', 'ja');
+            case 'purchaseDateDesc':
+            default:
+              return (b.purchaseDate || '').localeCompare(a.purchaseDate || '') || (b.createdAt || 0) - (a.createdAt || 0);
+          }
+        });
+
+        return filtered;
+      }
+
+      // 全数値で統一トーン背景にし、両端（1と5）のみ太字強調
+      function renderTraitBadgeHtml(prefix, kind, value) {
+        const meta = getTraitMeta(kind, value);
+        const labelHtml = meta.strong
+          ? `<strong class="ml-0.5 font-extrabold text-soy">${escapeHtml(meta.text)}</strong>`
+          : `<span class="ml-0.5 font-normal text-soy">${escapeHtml(meta.text)}</span>`;
+        return `<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-creamDark border border-straw/60 text-soyMuted text-[11px] font-normal shrink-0">${escapeHtml(prefix)}:${labelHtml}</span>`;
+      }
+
+      function formatOrgBadge(prefixLabel, name, pref, styleClass) {
+        const n = (name || '').trim();
+        const p = (pref || '').trim();
+        if (!n && !p) return '';
+        const prefTag = p
+          ? `<span class="ml-1 px-1.5 py-0.2 rounded bg-white/85 text-soy border border-straw/60 text-[10px] font-bold">${escapeHtml(p)}</span>`
+          : '';
+        return `<span class="inline-flex items-center px-2 py-0.5 rounded-md ${styleClass} text-[11px] max-w-full"><span class="truncate">${escapeHtml(prefixLabel)}：${escapeHtml(n || '名称未入力')}</span>${prefTag}</span>`;
+      }
+
+      function renderEntriesList() {
+        const listEl = document.getElementById('natto-list');
+        const emptyEl = document.getElementById('empty-state');
+        const totalCountEl = document.getElementById('total-count');
+        const statusBar = document.getElementById('filter-status');
+        const statusText = document.getElementById('filter-status-text');
+        const seedBtn = document.getElementById('btn-seed-samples');
+        const emptyTitle = document.getElementById('empty-title');
+        const emptyDesc = document.getElementById('empty-desc');
+
+        if (totalCountEl) totalCountEl.textContent = String(entries.length);
+
+        const list = getFilteredSortedEntries();
+        const hasActiveFilter = activeQuery.trim() !== '' || selectedRatings.size > 0;
+
+        if (statusBar && statusText) {
+          if (hasActiveFilter) {
+            statusBar.classList.remove('hidden');
+            const ratingDesc =
+              selectedRatings.size > 0
+                ? `（${[...selectedRatings].sort((a, b) => Number(b) - Number(a)).map((r) => `★${r}`).join(', ')}）`
+                : '';
+            statusText.textContent = `表示中：${list.length} 件 / 全 ${entries.length} 件 ${ratingDesc}`;
+          } else {
+            statusBar.classList.add('hidden');
+          }
+        }
+
+        if (!listEl || !emptyEl) return;
+
+        if (list.length === 0) {
+          listEl.innerHTML = '';
+          emptyEl.classList.remove('hidden');
+          if (entries.length > 0 && hasActiveFilter) {
+            if (emptyTitle) emptyTitle.textContent = '条件に合う記録が見つかりません';
+            if (emptyDesc) emptyDesc.textContent = '検索ワードや選択中の星評価チップを変更してみてください。';
+            if (seedBtn) seedBtn.classList.add('hidden');
+          } else {
+            if (emptyTitle) emptyTitle.textContent = 'まだ記録がありません';
+            if (emptyDesc) emptyDesc.textContent = '右下の「＋ 新規記録」ボタンから、食べた納豆の写真と感想を残してみましょう。';
+            if (seedBtn) seedBtn.classList.remove('hidden');
+          }
+          return;
+        }
+
+        emptyEl.classList.add('hidden');
+
+        listEl.innerHTML = list
+          .map((item) => {
+            const subs = getSubPackages(item);
+            const latestSubPhoto = [...subs].reverse().find((s) => s && s.photo);
+            const thumbSrc = item.photo || (latestSubPhoto ? latestSubPhoto.photo : '');
+
+            const subBadgeHtml =
+              subs.length > 0
+                ? `<span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-soy/90 text-cream text-[10px] font-bold">別パケ +${subs.length}</span>`
+                : '';
+
+            const photoHtml = thumbSrc
+              ? `<div class="relative w-full h-full"><img src="${thumbSrc}" alt="${escapeHtml(item.productName)}" class="w-full h-full object-cover" loading="lazy" />${subBadgeHtml}</div>`
+              : `<div class="relative w-full h-full bg-creamDark flex flex-col items-center justify-center text-soyMuted"><span class="text-[10px] font-bold">写真なし</span>${subBadgeHtml}</div>`;
+
+            const makerBadge = formatOrgBadge('製造', item.manufacturer, item.manufacturerPref, 'bg-goldLight/80 text-soy font-medium');
+            const sellerBadge = formatOrgBadge('販売', item.seller, item.sellerPref, 'bg-creamDark text-soyMuted font-medium');
+            const dateText = item.purchaseDate ? escapeHtml(item.purchaseDate.replace(/-/g, '/')) : '';
+            const locText = item.purchaseLocation ? escapeHtml(item.purchaseLocation) : '';
+
+            return `
+              <article
+                data-entry-id="${escapeHtml(item.id)}"
+                class="natto-card bg-white hover:bg-cream/60 active:scale-[0.99] transition rounded-2xl p-3 border border-straw/70 shadow-2xs flex gap-3.5 cursor-pointer"
+              >
+                <div class="w-20 h-24 sm:w-24 sm:h-24 rounded-xl overflow-hidden shrink-0 border border-straw/50 bg-creamDark">
+                  ${photoHtml}
+                </div>
+                <div class="flex-1 min-w-0 flex flex-col justify-between">
+                  <div>
+                    <div class="flex items-center justify-between gap-2 mb-0.5">
+                      ${renderStarDisplay(item.rating, 14, true)}
+                      <span class="text-[11px] text-soyMuted truncate">${[dateText, locText].filter(Boolean).join(' ・ ')}</span>
+                    </div>
+                    <h3 class="font-maru font-bold text-base text-soy truncate leading-snug">${escapeHtml(item.productName)}</h3>
+                    <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                      ${makerBadge}
+                      ${sellerBadge}
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                    ${renderTraitBadgeHtml('風味', 'flavor', item.flavor)}
+                    ${renderTraitBadgeHtml('食感', 'texture', item.texture)}
+                    ${renderTraitBadgeHtml('粘り', 'stickiness', item.stickiness)}
+                    ${item.notes ? `<span class="text-[11px] text-soyMuted truncate flex-1 min-w-[70px] ml-0.5">${escapeHtml(item.notes.replace(/\n+/g, ' '))}</span>` : ''}
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join('');
+
+        listEl.querySelectorAll('.natto-card').forEach((card) => {
+          card.addEventListener('click', () => {
+            const id = card.getAttribute('data-entry-id');
+            if (id) openDetailView(id);
+          });
+        });
+      }
+
+      // =========================================================
+      // 8. 新規・編集ビュー (#view-form)
+      // =========================================================
+      function setFormPhotoPreview(dataUrl) {
+        currentPhotoDataUrl = dataUrl || '';
+        const imgEl = document.getElementById('photo-preview');
+        const placeholderEl = document.getElementById('photo-placeholder');
+        const removeBtn = document.getElementById('btn-remove-photo');
+        if (!imgEl || !placeholderEl || !removeBtn) return;
+
+        if (currentPhotoDataUrl) {
+          imgEl.src = currentPhotoDataUrl;
+          imgEl.classList.remove('hidden');
+          placeholderEl.classList.add('hidden');
+          removeBtn.classList.remove('hidden');
+        } else {
+          imgEl.src = '';
+          imgEl.classList.add('hidden');
+          placeholderEl.classList.remove('hidden');
+          removeBtn.classList.add('hidden');
+        }
+      }
+
+      function showFormAlert(msg) {
+        const el = document.getElementById('form-alert');
+        if (!el) return;
+        if (!msg) {
+          el.textContent = '';
+          el.classList.add('hidden');
+        } else {
+          el.textContent = msg;
+          el.classList.remove('hidden');
+        }
+      }
+
+      function openFormView(entryToEdit = null) {
+        const form = document.getElementById('natto-form');
+        const titleEl = document.getElementById('form-view-title');
+        const submitBtn = document.getElementById('btn-form-submit');
+        if (!form) return;
+
+        refreshInputHelpers();
+        showFormAlert('');
+        form.reset();
+
+        if (entryToEdit) {
+          formReturnTarget = 'detail';
+          if (titleEl) titleEl.textContent = '納豆の記録を編集';
+          if (submitBtn) submitBtn.textContent = '更新する';
+
+          document.getElementById('entry-id').value = entryToEdit.id || '';
+          document.getElementById('product-name').value = entryToEdit.productName || '';
+          applyRatingValue(entryToEdit.rating || 3.0);
+          document.getElementById('purchase-date').value = entryToEdit.purchaseDate || getTodayIsoDate();
+          document.getElementById('purchase-location').value = entryToEdit.purchaseLocation || '';
+          document.getElementById('manufacturer').value = entryToEdit.manufacturer || '';
+          document.getElementById('manufacturer-pref').value = entryToEdit.manufacturerPref || '';
+          document.getElementById('seller').value = entryToEdit.seller || '';
+          document.getElementById('seller-pref').value = entryToEdit.sellerPref || '';
+          document.getElementById('flavor-slider').value = String(Number(entryToEdit.flavor) || 3);
+          document.getElementById('texture-slider').value = String(Number(entryToEdit.texture) || 3);
+          document.getElementById('stickiness-slider').value = String(Number(entryToEdit.stickiness) || 3);
+          document.getElementById('notes-input').value = entryToEdit.notes || '';
+          setFormPhotoPreview(entryToEdit.photo || '');
+        } else {
+          formReturnTarget = 'home';
+          if (titleEl) titleEl.textContent = '新しい納豆を記録';
+          if (submitBtn) submitBtn.textContent = '記録する';
+
+          document.getElementById('entry-id').value = '';
+          document.getElementById('purchase-date').value = getTodayIsoDate();
+          document.getElementById('manufacturer-pref').value = '';
+          document.getElementById('seller-pref').value = '';
+          document.getElementById('flavor-slider').value = '3';
+          document.getElementById('texture-slider').value = '3';
+          document.getElementById('stickiness-slider').value = '3';
+          applyRatingValue(3.0);
+          setFormPhotoPreview('');
+        }
+
+        syncSliderBadges();
+        showView('view-form');
+      }
+
+      async function handleFormSubmit(event) {
+        event.preventDefault();
+        showFormAlert('');
+
+        const nameInput = document.getElementById('product-name');
+        const productName = nameInput ? nameInput.value.trim() : '';
+        if (!productName) {
+          showFormAlert('商品名を入力してください。');
+          if (nameInput) nameInput.focus();
+          return;
+        }
+
+        const existingId = (document.getElementById('entry-id').value || '').trim();
+        const existingItem = existingId ? entries.find((e) => e.id === existingId) : null;
+
+        const record = {
+          id: existingItem ? existingItem.id : `natto_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          productName,
+          rating: Math.max(0.5, Math.min(5.0, Math.round((Number(currentRating) || 3.0) * 2) / 2)),
+          purchaseDate: document.getElementById('purchase-date').value || getTodayIsoDate(),
+          purchaseLocation: (document.getElementById('purchase-location').value || '').trim(),
+          manufacturer: (document.getElementById('manufacturer').value || '').trim(),
+          manufacturerPref: document.getElementById('manufacturer-pref').value || '',
+          seller: (document.getElementById('seller').value || '').trim(),
+          sellerPref: document.getElementById('seller-pref').value || '',
+          flavor: Math.max(1, Math.min(5, Math.round(Number(document.getElementById('flavor-slider').value) || 3))),
+          texture: Math.max(1, Math.min(5, Math.round(Number(document.getElementById('texture-slider').value) || 3))),
+          stickiness: Math.max(1, Math.min(5, Math.round(Number(document.getElementById('stickiness-slider').value) || 3))),
+          notes: (document.getElementById('notes-input').value || '').trim(),
+          photo: currentPhotoDataUrl || '',
+          subPackages: existingItem ? getSubPackages(existingItem) : [],
+          createdAt: existingItem ? existingItem.createdAt : Date.now(),
+          updatedAt: Date.now(),
+        };
+
+        try {
+          await storage.put(record);
+          entries = await storage.getAll();
+          refreshInputHelpers();
+          renderEntriesList();
+
+          if (existingItem && formReturnTarget === 'detail') {
+            openDetailView(record.id);
+            showToast('記録を更新しました');
+          } else {
+            showView('view-home');
+            showToast('納豆図鑑に保存しました');
+          }
+        } catch (err) {
+          showFormAlert(err && err.message ? err.message : '保存中にエラーが発生しました。');
+        }
+      }
+
+      // =========================================================
+      // 9. 詳細ビュー (#view-detail)
+      // =========================================================
+      function renderScaleBar(label, kind, minText, maxText, value) {
+        const val = Math.max(1, Math.min(5, Math.round(Number(value) || 3)));
+        const meta = getTraitMeta(kind, val);
+        const segments = [1, 2, 3, 4, 5]
+          .map((n) => {
+            const isCurrent = n === val;
+            const isFilled = n <= val;
+            return `<div class="h-2.5 flex-1 rounded-full ${isCurrent ? 'bg-soy ring-2 ring-gold' : isFilled ? 'bg-gold/75' : 'bg-straw/45'}"></div>`;
+          })
+          .join('');
+
+        return `
+          <div class="space-y-1">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-bold text-soy">${escapeHtml(label)}</span>
+              <span class="text-soy bg-creamDark px-2.5 py-0.5 rounded-full border border-straw/60 ${meta.strong ? 'font-extrabold' : 'font-normal'}">${escapeHtml(meta.text)}（${val} / 5）</span>
+            </div>
+            <div class="flex items-center gap-1.5">${segments}</div>
+            <div class="flex justify-between text-[11px] text-soyMuted">
+              <span><strong>${escapeHtml(minText)}</strong></span>
+              <span><strong>${escapeHtml(maxText)}</strong></span>
+            </div>
+          </div>
+        `;
+      }
+
+      function formatOrgDetailText(name, pref) {
+        const n = (name || '').trim();
+        const p = (pref || '').trim();
+        if (n && p) return `${escapeHtml(n)}（${escapeHtml(p)}）`;
+        if (n) return escapeHtml(n);
+        if (p) return `（${escapeHtml(p)}）`;
+        return '未入力';
+      }
+
+      function openDetailView(id) {
+        const entry = entries.find((item) => item.id === id);
+        const bodyEl = document.getElementById('detail-body');
+        if (!entry || !bodyEl) {
+          showToast('記録が見つかりませんでした');
+          showView('view-home');
+          return;
+        }
+
+        viewingEntryId = entry.id;
+        activePkgTargetId = entry.id;
+        const subs = getSubPackages(entry);
+
+        const photoSection = entry.photo
+          ? `<div class="w-full max-h-64 rounded-2xl overflow-hidden bg-creamDark border border-straw/60 flex items-center justify-center relative">
+               <img
+                 id="detail-main-photo"
+                 src="${entry.photo}"
+                 alt="${escapeHtml(entry.productName)}"
+                 class="w-full h-full max-h-64 object-contain cursor-zoom-in"
+               />
+               <span class="pointer-events-none absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/55 text-white text-[10px] font-bold">タップで拡大</span>
+             </div>`
+          : '';
+
+        const subListHtml =
+          subs.length > 0
+            ? `<div class="space-y-2.5">
+                ${subs
+                  .map((pkg, idx) => {
+                    const pkgDate = pkg.purchaseDate ? escapeHtml(pkg.purchaseDate.replace(/-/g, '/')) : '日付なし';
+                    const pkgNotes = pkg.notes ? escapeHtml(pkg.notes) : 'メモなし';
+                    const pkgImg = pkg.photo
+                      ? `<button
+                           type="button"
+                           data-zoom-sub-idx="${idx}"
+                           class="relative w-20 h-20 rounded-xl overflow-hidden bg-creamDark border border-straw/60 shrink-0 cursor-zoom-in group"
+                           title="タップして拡大表示"
+                         >
+                           <img src="${pkg.photo}" alt="別パッケージ #${idx + 1}" class="w-full h-full object-cover" />
+                           <span class="pointer-events-none absolute bottom-0.5 right-0.5 px-1 py-0.2 rounded bg-black/60 text-white text-[9px] font-bold">拡大</span>
+                         </button>`
+                      : `<div class="w-20 h-20 rounded-xl bg-creamDark border border-straw/60 flex items-center justify-center text-[10px] text-soyMuted font-bold shrink-0">写真なし</div>`;
+
+                    return `
+                      <div class="p-3 rounded-xl bg-cream/70 border border-straw/60 flex items-start gap-3">
+                        ${pkgImg}
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center justify-between gap-2 mb-1">
+                            <span class="text-[11px] font-bold text-soy bg-goldLight px-2 py-0.5 rounded-md">別パッケージ #${idx + 1}</span>
+                            <span class="text-[11px] text-soyMuted">${pkgDate}</span>
+                          </div>
+                          <p class="text-xs text-soy whitespace-pre-wrap leading-relaxed">${pkgNotes}</p>
+                        </div>
+                        <button
+                          type="button"
+                          data-delete-sub-id="${escapeHtml(pkg.id)}"
+                          class="p-2 rounded-lg text-soyMuted hover:text-red-600 hover:bg-red-50 transition shrink-0"
+                          title="この別パッケージ記録を削除"
+                        >
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    `;
+                  })
+                  .join('')}
+              </div>`
+            : `<p class="text-xs text-soyMuted leading-relaxed">
+                 まだ別パッケージの追加はありません。デザイン変更や限定版を見つけたら下のボタンから追加できます。
+               </p>`;
+
+        bodyEl.innerHTML = `
+          ${photoSection}
+
+          <div>
+            <div class="mb-1">${renderStarDisplay(entry.rating, 20, true)}</div>
+            <h3 class="font-maru font-bold text-xl text-soy leading-snug">${escapeHtml(entry.productName)}</h3>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-1">
+              <div class="text-[11px] font-bold text-soyMuted">初回購入日・購入場所</div>
+              <div class="font-bold text-soy">${entry.purchaseDate ? escapeHtml(entry.purchaseDate.replace(/-/g, '/')) : '未入力'}</div>
+              <div class="text-soyLight">${entry.purchaseLocation ? escapeHtml(entry.purchaseLocation) : '購入場所の記録なし'}</div>
+            </div>
+            <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-1">
+              <div class="text-[11px] font-bold text-soyMuted">製造元・販売元</div>
+              <div class="text-soy"><span class="text-soyMuted">製造元：</span><strong class="font-bold">${formatOrgDetailText(entry.manufacturer, entry.manufacturerPref)}</strong></div>
+              <div class="text-soy"><span class="text-soyMuted">販売元：</span><strong class="font-bold">${formatOrgDetailText(entry.seller, entry.sellerPref)}</strong></div>
+            </div>
+          </div>
+
+          <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-3">
+            <div class="text-[11px] font-bold text-soyMuted">風味・食感・粘り</div>
+            ${renderScaleBar('風味', 'flavor', '1：大豆', '5：納豆', entry.flavor)}
+            ${renderScaleBar('食感', 'texture', '1：柔', '5：硬', entry.texture)}
+            ${renderScaleBar('粘り', 'stickiness', '1：少', '5：多', entry.stickiness)}
+          </div>
+
+          <div class="bg-white p-3.5 rounded-2xl border border-straw/70">
+            <div class="text-[11px] font-bold text-soyMuted mb-1">感想・メモ</div>
+            <p class="text-sm text-soy whitespace-pre-wrap leading-relaxed">${entry.notes ? escapeHtml(entry.notes) : 'メモはありません。'}</p>
+          </div>
+
+          <!-- 別パッケージセクション＆ワンタップ追加ボタン -->
+          <div class="bg-white p-3.5 rounded-2xl border border-straw/70 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-bold text-soy">別パッケージ記録（${subs.length}件）</span>
+              <button
+                id="btn-detail-add-pkg"
+                type="button"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold text-soy bg-goldLight hover:bg-gold/30 active:scale-95 border border-gold/70 transition"
+              >
+                ＋ 別パッケージを追加
+              </button>
+            </div>
+            ${subListHtml}
+          </div>
+
+          <div class="pt-2">
+            <button
+              id="btn-detail-delete"
+              type="button"
+              class="w-full py-3 rounded-xl text-xs font-bold text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 transition"
+            >
+              この商品の記録を削除する
+            </button>
+          </div>
+        `;
+
+        // メイン画像の拡大表示
+        const mainPhotoEl = document.getElementById('detail-main-photo');
+        if (mainPhotoEl && entry.photo) {
+          mainPhotoEl.addEventListener('click', () => {
+            openLightbox(
+              entry.photo,
+              entry.productName,
+              `購入日：${entry.purchaseDate ? entry.purchaseDate.replace(/-/g, '/') : '未入力'}`
+            );
+          });
+        }
+
+        // 別パッケージ画像の拡大表示
+        bodyEl.querySelectorAll('[data-zoom-sub-idx]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const idx = Number(btn.getAttribute('data-zoom-sub-idx'));
+            const pkg = subs[idx];
+            if (pkg && pkg.photo) {
+              const dateLabel = pkg.purchaseDate ? pkg.purchaseDate.replace(/-/g, '/') : '日付なし';
+              const memoLabel = pkg.notes ? ` ・ ${pkg.notes}` : '';
+              openLightbox(
+                pkg.photo,
+                `${entry.productName}（別パッケージ #${idx + 1}）`,
+                `購入日：${dateLabel}${memoLabel}`
+              );
+            }
+          });
+        });
+
+        // ワンタップで別パッケージ追加ビューへ直接遷移
+        const addPkgBtn = document.getElementById('btn-detail-add-pkg');
+        if (addPkgBtn) {
+          addPkgBtn.addEventListener('click', () => {
+            openAddPkgView(entry.id);
+          });
+        }
+
+        // 商品削除ボタン
+        const deleteBtn = document.getElementById('btn-detail-delete');
+        if (deleteBtn) {
+          deleteBtn.addEventListener('click', async () => {
+            const ok = await openConfirmDialog(
+              '記録を削除しますか？',
+              `「${entry.productName}」の記録を削除します。この操作は取り消せません。`
+            );
+            if (!ok) return;
+            await storage.delete(entry.id);
+            entries = await storage.getAll();
+            viewingEntryId = null;
+            activePkgTargetId = null;
+            refreshInputHelpers();
+            renderEntriesList();
+            showView('view-home');
+            showToast('記録を削除しました');
+          });
+        }
+
+        // 別パッケージの個別削除ボタン
+        bodyEl.querySelectorAll('[data-delete-sub-id]').forEach((btn) => {
+          btn.addEventListener('click', async () => {
+            const subId = btn.getAttribute('data-delete-sub-id');
+            if (!subId) return;
+            const ok = await openConfirmDialog(
+              '別パッケージを削除しますか？',
+              'この別パッケージの写真・購入日・メモを削除します。'
+            );
+            if (!ok) return;
+            const currentEntry = entries.find((e) => e.id === entry.id);
+            if (!currentEntry) return;
+            const nextSubs = getSubPackages(currentEntry).filter((s) => s.id !== subId);
+            const updated = { ...currentEntry, subPackages: nextSubs, updatedAt: Date.now() };
+            await storage.put(updated);
+            entries = await storage.getAll();
+            renderEntriesList();
+            openDetailView(entry.id);
+            showToast('別パッケージを削除しました');
+          });
+        });
+
+        showView('view-detail');
+      }
+
+      // =========================================================
+      // 10. 別パッケージ追加ビュー (#view-pkg-form)
+      // =========================================================
+      function setPkgPhotoPreview(dataUrl) {
+        currentPkgPhotoDataUrl = dataUrl || '';
+        const imgEl = document.getElementById('pkg-photo-preview');
+        const placeholderEl = document.getElementById('pkg-photo-placeholder');
+        const removeBtn = document.getElementById('btn-remove-pkg-photo');
+        if (!imgEl || !placeholderEl || !removeBtn) return;
+
+        if (currentPkgPhotoDataUrl) {
+          imgEl.src = currentPkgPhotoDataUrl;
+          imgEl.classList.remove('hidden');
+          placeholderEl.classList.add('hidden');
+          removeBtn.classList.remove('hidden');
+        } else {
+          imgEl.src = '';
+          imgEl.classList.add('hidden');
+          placeholderEl.classList.remove('hidden');
+          removeBtn.classList.add('hidden');
+        }
+      }
+
+      function showPkgAlert(msg) {
+        const el = document.getElementById('pkg-alert');
+        if (!el) return;
+        if (!msg) {
+          el.textContent = '';
+          el.classList.add('hidden');
+        } else {
+          el.textContent = msg;
+          el.classList.remove('hidden');
+        }
+      }
+
+      function openAddPkgView(targetId) {
+        const resolvedId = targetId || viewingEntryId || activePkgTargetId;
+        const target = entries.find((item) => item.id === resolvedId);
+        const form = document.getElementById('pkg-form');
+        const labelEl = document.getElementById('pkg-target-label');
+        const dateEl = document.getElementById('pkg-date-input');
+
+        if (!target || !form) {
+          showToast('対象の商品が見つかりませんでした');
+          showView('view-home');
+          return;
+        }
+
+        activePkgTargetId = target.id;
+        showPkgAlert('');
+        form.reset();
+        setPkgPhotoPreview('');
+        if (labelEl) labelEl.textContent = `対象商品：${target.productName}`;
+        if (dateEl) dateEl.value = getTodayIsoDate();
+
+        showView('view-pkg-form');
+      }
+
+      async function handlePkgFormSubmit(event) {
+        event.preventDefault();
+        showPkgAlert('');
+
+        const target = entries.find((item) => item.id === activePkgTargetId);
+        if (!target) {
+          showPkgAlert('対象の商品が見つかりませんでした。一覧から再度選択してください。');
+          return;
+        }
+
+        const purchaseDate = document.getElementById('pkg-date-input').value || getTodayIsoDate();
+        const notes = (document.getElementById('pkg-notes-input').value || '').trim();
+
+        if (!currentPkgPhotoDataUrl && !notes) {
+          showPkgAlert('新しいパッケージ写真またはメモのどちらかを入力してください。');
+          return;
+        }
+
+        const newSub = {
+          id: `pkg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          photo: currentPkgPhotoDataUrl || '',
+          purchaseDate,
+          notes,
+          createdAt: Date.now(),
+        };
+
+        const updatedRecord = {
+          ...target,
+          subPackages: [...getSubPackages(target), newSub],
+          updatedAt: Date.now(),
+        };
+
+        try {
+          await storage.put(updatedRecord);
+          entries = await storage.getAll();
+          renderEntriesList();
+          openDetailView(target.id);
+          showToast('別パッケージを追加しました');
+        } catch (err) {
+          showPkgAlert(err && err.message ? err.message : '追加中にエラーが発生しました。');
+        }
+      }
+
+      // =========================================================
+      // 11. データ管理（JSON書き出し＆復元）＆サンプルデータ
+      // =========================================================
+      function handleExportJson() {
+        try {
+          const jsonStr = JSON.stringify(entries, null, 2);
+          const blob = new Blob([jsonStr], { type: 'application/json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `natto-zukan-backup-${getTodayIsoDate()}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('JSONバックアップを書き出しました');
+        } catch (err) {
+          showToast('書き出しに失敗しました');
+        }
+      }
+
+      async function handleImportJson(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+        try {
+          const text = await file.text();
+          const parsed = JSON.parse(text);
+          if (!Array.isArray(parsed)) {
+            throw new Error('配列形式のJSONファイルではありません。');
+          }
+          let count = 0;
+          for (const raw of parsed) {
+            if (raw && typeof raw === 'object' && raw.productName) {
+              const rawSubs = Array.isArray(raw.subPackages)
+                ? raw.subPackages
+                : Array.isArray(raw.packages)
+                ? raw.packages
+                : [];
+              const normalizedSubs = rawSubs
+                .filter((p) => p && typeof p === 'object')
+                .map((p, idx) => ({
+                  id: String(p.id || `pkg_${Date.now()}_${count}_${idx}`),
+                  photo: typeof p.photo === 'string' ? p.photo : '',
+                  purchaseDate: p.purchaseDate ? String(p.purchaseDate) : getTodayIsoDate(),
+                  notes: p.notes ? String(p.notes) : '',
+                  createdAt: Number(p.createdAt) || Date.now(),
+                }));
+
+              const normalized = {
+                id: String(raw.id || `imported_${Date.now()}_${count}`),
+                productName: String(raw.productName).trim(),
+                rating: Math.max(0.5, Math.min(5.0, Math.round((Number(raw.rating) || 3.0) * 2) / 2)),
+                purchaseDate: raw.purchaseDate ? String(raw.purchaseDate) : getTodayIsoDate(),
+                purchaseLocation: raw.purchaseLocation ? String(raw.purchaseLocation) : '',
+                manufacturer: raw.manufacturer ? String(raw.manufacturer) : '',
+                manufacturerPref: raw.manufacturerPref ? String(raw.manufacturerPref) : '',
+                seller: raw.seller ? String(raw.seller) : '',
+                sellerPref: raw.sellerPref ? String(raw.sellerPref) : '',
+                flavor: Math.max(1, Math.min(5, Math.round(Number(raw.flavor) || 3))),
+                texture: Math.max(1, Math.min(5, Math.round(Number(raw.texture) || 3))),
+                stickiness: Math.max(1, Math.min(5, Math.round(Number(raw.stickiness) || 3))),
+                notes: raw.notes ? String(raw.notes) : '',
+                photo: typeof raw.photo === 'string' ? raw.photo : '',
+                subPackages: normalizedSubs,
+                createdAt: Number(raw.createdAt) || Date.now(),
+                updatedAt: Date.now(),
+              };
+              await storage.put(normalized);
+              count += 1;
+            }
+          }
+          entries = await storage.getAll();
+          refreshInputHelpers();
+          renderEntriesList();
+          showView('view-home');
+          showToast(`${count}件のデータを復元しました`);
+        } catch (err) {
+          showToast(err && err.message ? err.message : 'JSONファイルの読み込みに失敗しました');
+        } finally {
+          event.target.value = '';
+        }
+      }
+
+      function createSampleRecords() {
+        const today = getTodayIsoDate();
+        const makeSvgPhoto = (label, bgHex, fgHex) => {
+          const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320" viewBox="0 0 480 320">
+            <rect width="480" height="320" fill="${bgHex}"/>
+            <rect x="28" y="28" width="424" height="264" rx="22" fill="#FAF7F2" stroke="${fgHex}" stroke-width="6"/>
+            <text x="240" y="138" font-family="sans-serif" font-size="34" font-weight="bold" fill="${fgHex}" text-anchor="middle">納豆図鑑サンプル</text>
+            <text x="240" y="192" font-family="sans-serif" font-size="22" font-weight="bold" fill="#4A3525" text-anchor="middle">${label}</text>
+          </svg>`;
+          return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+        };
+
+        return [
+          {
+            id: `sample_${Date.now()}_1`,
+            productName: 'ひたちなか極小粒 納豆',
+            rating: 4.5,
+            purchaseDate: today,
+            purchaseLocation: '地元スーパー',
+            manufacturer: '茨城豆匠',
+            manufacturerPref: '茨城県',
+            seller: '茨城豆匠',
+            sellerPref: '茨城県',
+            flavor: 5,
+            texture: 2,
+            stickiness: 5,
+            notes: '納豆らしい香りと強い粘りが最高。ご飯によく絡む。',
+            photo: makeSvgPhoto('ひたちなか極小粒', '#F9EEDB', '#C88A2E'),
+            subPackages: [],
+            createdAt: Date.now() - 2000,
+            updatedAt: Date.now() - 2000,
+          },
+          {
+            id: `sample_${Date.now()}_2`,
+            productName: '十勝産大粒 こだわり納豆',
+            rating: 4.0,
+            purchaseDate: today,
+            purchaseLocation: '自然食品店',
+            manufacturer: '北の大豆工房',
+            manufacturerPref: '北海道',
+            seller: '関東マルシェ',
+            sellerPref: '東京都',
+            flavor: 1,
+            texture: 4,
+            stickiness: 2,
+            notes: '大豆の甘みと噛みごたえがしっかり。タレも上品。',
+            photo: makeSvgPhoto('十勝産大粒', '#E6F0E6', '#3F6E3F'),
+            subPackages: [],
+            createdAt: Date.now() - 5000,
+            updatedAt: Date.now() - 5000,
+          },
+        ];
+      }
+
+      // =========================================================
+      // 12. イベントバインド＆初期化
+      // =========================================================
+      function bindEvents() {
+        // ライトボックス閉じる操作（閉じるボタン・画像タップ・背景タップ）
+        document.getElementById('btn-close-lightbox').addEventListener('click', closeLightbox);
+        document.getElementById('lightbox-img').addEventListener('click', closeLightbox);
+        document.getElementById('lightbox-backdrop').addEventListener('click', (e) => {
+          if (e.target === e.currentTarget) {
+            closeLightbox();
+          }
+        });
+
+        // ホーム画面のボタン
+        document.getElementById('btn-fab-create').addEventListener('click', () => openFormView(null));
+        document.getElementById('btn-open-data').addEventListener('click', () => showView('view-data'));
+
+        // 新規・編集ビューのボタン
+        const returnFromForm = () => {
+          if (formReturnTarget === 'detail' && viewingEntryId) {
+            openDetailView(viewingEntryId);
+          } else {
+            showView('view-home');
+          }
+        };
+        document.getElementById('btn-form-back').addEventListener('click', returnFromForm);
+        document.getElementById('btn-form-cancel').addEventListener('click', returnFromForm);
+        document.getElementById('natto-form').addEventListener('submit', handleFormSubmit);
+
+        document.getElementById('photo-input').addEventListener('change', async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            const compressed = await compressImage(file, 800, 0.75);
+            setFormPhotoPreview(compressed);
+            showFormAlert('');
+            showToast('画像を圧縮してセットしました');
+          } catch (err) {
+            showFormAlert(err && err.message ? err.message : '画像の読み込みに失敗しました。');
+          } finally {
+            e.target.value = '';
+          }
+        });
+        document.getElementById('btn-remove-photo').addEventListener('click', () => setFormPhotoPreview(''));
+
+        document.getElementById('btn-copy-maker').addEventListener('click', () => {
+          document.getElementById('seller').value = document.getElementById('manufacturer').value;
+          document.getElementById('seller-pref').value = document.getElementById('manufacturer-pref').value;
+          showToast('製造元の情報を販売元にコピーしました');
+        });
+
+        ['flavor-slider', 'texture-slider', 'stickiness-slider'].forEach((id) => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.addEventListener('input', syncSliderBadges);
+            el.addEventListener('change', syncSliderBadges);
+          }
+        });
+
+        // 詳細ビューのヘッダーボタン
+        document.getElementById('btn-detail-back').addEventListener('click', () => showView('view-home'));
+        document.getElementById('btn-detail-edit').addEventListener('click', () => {
+          const target = entries.find((item) => item.id === viewingEntryId);
+          if (target) openFormView(target);
+        });
+
+        // 別パッケージ追加ビューのボタン
+        const returnToDetailFromPkg = () => {
+          if (activePkgTargetId) {
+            openDetailView(activePkgTargetId);
+          } else {
+            showView('view-home');
+          }
+        };
+        document.getElementById('btn-pkg-back').addEventListener('click', returnToDetailFromPkg);
+        document.getElementById('btn-pkg-cancel').addEventListener('click', returnToDetailFromPkg);
+        document.getElementById('pkg-form').addEventListener('submit', handlePkgFormSubmit);
+
+        document.getElementById('pkg-photo-input').addEventListener('change', async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          try {
+            const compressed = await compressImage(file, 800, 0.75);
+            setPkgPhotoPreview(compressed);
+            showPkgAlert('');
+            showToast('パッケージ画像を圧縮してセットしました');
+          } catch (err) {
+            showPkgAlert(err && err.message ? err.message : '画像の読み込みに失敗しました。');
+          } finally {
+            e.target.value = '';
+          }
+        });
+        document.getElementById('btn-remove-pkg-photo').addEventListener('click', () => setPkgPhotoPreview(''));
+
+        // データ管理ビューのボタン
+        document.getElementById('btn-data-back').addEventListener('click', () => showView('view-home'));
+        document.getElementById('btn-export-json').addEventListener('click', handleExportJson);
+        document.getElementById('import-json-input').addEventListener('change', handleImportJson);
+
+        // 検索・ソート・リセット・サンプル追加
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('btn-clear-search');
+        searchInput.addEventListener('input', (e) => {
+          activeQuery = e.target.value || '';
+          clearSearchBtn.classList.toggle('hidden', activeQuery === '');
+          renderEntriesList();
+        });
+        clearSearchBtn.addEventListener('click', () => {
+          searchInput.value = '';
+          activeQuery = '';
+          clearSearchBtn.classList.add('hidden');
+          renderEntriesList();
+        });
+
+        document.getElementById('sort-select').addEventListener('change', (e) => {
+          activeSort = e.target.value;
+          renderEntriesList();
+        });
+
+        document.getElementById('btn-reset-filters').addEventListener('click', () => {
+          activeQuery = '';
+          selectedRatings.clear();
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+          renderRatingFilterChips();
+          renderEntriesList();
+        });
+
+        document.getElementById('btn-seed-samples').addEventListener('click', async () => {
+          const samples = createSampleRecords();
+          for (const s of samples) {
+            await storage.put(s);
+          }
+          entries = await storage.getAll();
+          refreshInputHelpers();
+          renderEntriesList();
+          showToast('サンプルデータを2件追加しました');
+        });
+      }
+
+      async function init() {
+        initPrefectureSelects();
+        renderRatingFilterChips();
+        applyRatingValue(3.0);
+        syncSliderBadges();
+        bindEvents();
+        showView('view-home');
+
+        await storage.open();
+        entries = await storage.getAll();
+        refreshInputHelpers();
+        renderEntriesList();
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
